@@ -5,10 +5,11 @@ import {
   Text,
   View,
   ScrollView,
-  StyleSheet,
-  SafeAreaView,
+  Alert,
   ActivityIndicator,
+  SafeAreaView,
   Pressable,
+  StyleSheet,
 } from 'react-native';
 import { colors, CLEAR, ENTER, colorsToEmoji } from '../../constants';
 import Keyboard from '../Keyboard';
@@ -40,7 +41,7 @@ const Game = ({ navigation }) => {
   const [curRow, setCurRow] = useState(0);
   const [curCol, setCurCol] = useState(0);
   const [gameState, setGameState] = useState('playing');
-  const [loaded, setLoaded] = useState(false);
+  const [loaded, setLoaded] = useState(true);
 
   useEffect(() => {
     if (curRow > 0) {
@@ -48,57 +49,51 @@ const Game = ({ navigation }) => {
     }
   }, [curRow]);
 
-  useEffect(() => {
-    if (gameState !== 'playing') {
-      navigation.navigate('MyModal');
-    }
-  }, [gameState]);
+  // useEffect(() => {
+  //   if (loaded) {
+  //     persistState();
+  //   }
+  // }, [rows, curCol, curRow, gameState]);
 
-  useEffect(() => {
-    if (loaded) {
-      persistState();
-    }
-  }, [rows, curCol, curRow, gameState]);
+  // useEffect(() => {
+  //   readState();
+  // }, []);
 
-  useEffect(() => {
-    readState();
-  }, []);
+  // const persistState = async () => {
+  //   const dataForToday = {
+  //     rows,
+  //     curRow,
+  //     curCol,
+  //     gameState,
+  //   };
+  //   try {
+  //     let existingStateString = await AsyncStorage.getItem('@game');
+  //     let existingState = existingStateString
+  //       ? JSON.parse(existingStateString)
+  //       : {};
+  //     existingState[dayKey] = dataForToday;
+  //     const dataString = JSON.stringify(existingState);
+  //     console.log('Saving', dataString);
+  //     await AsyncStorage.setItem('@game', dataString);
+  //   } catch (e) {
+  //     console.log('failed to write data to async storage', e);
+  //   }
+  // };
 
-  const persistState = async () => {
-    const dataForToday = {
-      rows,
-      curRow,
-      curCol,
-      gameState,
-    };
-    try {
-      let existingStateString = await AsyncStorage.getItem('@game');
-      let existingState = existingStateString
-        ? JSON.parse(existingStateString)
-        : {};
-      existingState[dayKey] = dataForToday;
-      const dataString = JSON.stringify(existingState);
-      console.log('Saving', dataString);
-      await AsyncStorage.setItem('@game', dataString);
-    } catch (e) {
-      console.log('failed to write data to async storage', e);
-    }
-  };
-
-  const readState = async () => {
-    const dataString = await AsyncStorage.getItem('@game');
-    try {
-      const data = JSON.parse(dataString);
-      const day = data[dayKey];
-      setRows(day.rows);
-      setCurCol(day.curCol);
-      setCurRow(day.curRow);
-      setGameState(day.gameState);
-    } catch (e) {
-      console.log("Couldn't parse state");
-    }
-    setLoaded(true);
-  };
+  // const readState = async () => {
+  //   const dataString = await AsyncStorage.getItem('@game');
+  //   try {
+  //     const data = JSON.parse(dataString);
+  //     const day = data[dayKey];
+  //     setRows(day.rows);
+  //     setCurCol(day.curCol);
+  //     setCurRow(day.curRow);
+  //     setGameState(day.gameState);
+  //   } catch (e) {
+  //     console.log("Couldn't parse state");
+  //   }
+  //   setLoaded(true);
+  // };
 
   const checkGameState = () => {
     if (checkIfWon() && gameState !== 'won') {
@@ -190,57 +185,19 @@ const Game = ({ navigation }) => {
     return <ActivityIndicator />;
   }
 
-  // if (gameState !== 'playing') {
-  //   return (
-  //     <EndScreen
-  //       won={gameState === 'won'}
-  //       rows={rows}
-  //       getCellBGColor={getCellBGColor}
-  //     />
-  //   );
-  // }
+  if (gameState !== 'playing') {
+    return (
+      <EndScreen
+        won={gameState === 'won'}
+        rows={rows}
+        getCellBGColor={getCellBGColor}
+      />
+    );
+  }
 
   return (
     <SafeAreaView style={styles2.container}>
       <StatusBar style='light' />
-      <View
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          width: '100%',
-          marginBottom: 15,
-          marginTop: 5,
-        }}
-      >
-        <View style={{ display: 'flex', flexDirection: 'row' }}>
-          <Pressable
-            style={[
-              styles2.button5,
-              { backgroundColor: 'blue', marginRight: 10 },
-            ]}
-            onPress={() => navigation.navigate('HelpModal')}
-          >
-            <Entypo name='help' size={24} color='white' />
-          </Pressable>
-          <Pressable
-            style={[styles2.button5, { backgroundColor: 'blue' }]}
-            onPress={() => navigation.navigate('Home')}
-          >
-            <Entypo name='bar-graph' size={24} color='white' />
-          </Pressable>
-        </View>
-        <View>
-          <Text style={styles2.classicText}>Classic</Text>
-        </View>
-        <Pressable
-          style={[styles2.button5, { backgroundColor: 'orange' }]}
-          onPress={() => navigation.navigate('SettingsModal')}
-        >
-          <Entypo name='cog' size={24} color='white' />
-        </Pressable>
-      </View>
       <ScrollView style={styles.map}>
         {rows.map((row, i) => (
           <Animated.View
@@ -347,13 +304,6 @@ const styles2 = StyleSheet.create({
   text2: {
     fontSize: 20,
     lineHeight: 21,
-    fontWeight: 'bold',
-    letterSpacing: 0.25,
-    color: 'white',
-  },
-  classicText: {
-    fontSize: 26,
-    lineHeight: 27,
     fontWeight: 'bold',
     letterSpacing: 0.25,
     color: 'white',

@@ -4,13 +4,15 @@ import { colors, colorsToEmoji } from '../../constants';
 import * as Clipboard from 'expo-clipboard';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Animated, { SlideInLeft } from 'react-native-reanimated';
+import Modal from '../Modal';
+import { Entypo } from '@expo/vector-icons';
 
 const Number = ({ number, label }) => (
-  <View style={{ alignItems: 'center', margin: 10 }}>
-    <Text style={{ color: colors.lightgrey, fontSize: 30, fontWeight: 'bold' }}>
+  <View style={{ alignItems: 'center', marginVertical: 10 }}>
+    <Text style={{ color: colors.lightgrey, fontSize: 16, fontWeight: 'bold' }}>
       {number}
     </Text>
-    <Text style={{ color: colors.lightgrey, fontSize: 16 }}>{label}</Text>
+    <Text style={{ color: colors.lightgrey, fontSize: 10 }}>{label}</Text>
   </View>
 );
 
@@ -48,7 +50,7 @@ const GuessDistribution = ({ distribution }) => {
   return (
     <>
       <Text style={styles.subtitle}>Guess Distribution</Text>
-      <View style={{ width: '100%', padding: 20 }}>
+      <View style={{ width: '100%', paddingVertical: 5 }}>
         {distribution.map((dist, index) => (
           <GuessDistributionLine
             key={index}
@@ -62,7 +64,7 @@ const GuessDistribution = ({ distribution }) => {
   );
 };
 
-const EndScreen = ({ won = false, rows, getCellBGColor }) => {
+const EndScreen = ({ won = false, rows, getCellBGColor, navigation }) => {
   const [secondsTillTomorrow, setSecondsTillTomorrow] = useState(0);
   const [played, setPlayed] = useState(0);
   const [winRate, setWinRate] = useState(0);
@@ -158,81 +160,107 @@ const EndScreen = ({ won = false, rows, getCellBGColor }) => {
   };
 
   return (
-    <View style={{}}>
-      <Animated.Text
-        entering={SlideInLeft.springify().mass(0.5)}
-        style={styles.title}
-      >
-        {won ? 'Congrats' : 'Try, again'}
-      </Animated.Text>
+    <Modal navigation={navigation} pH={25}>
+      <Pressable onPress={() => navigation.goBack()} style={styles.cross}>
+        <Entypo name='cross' size={28} color='gray' />
+      </Pressable>
+      <View>
+        {/* <Animated.Text
+          entering={SlideInLeft.springify().mass(0.5)}
+          style={styles.title}
+        >
+          {won ? 'Congrats' : 'Try, again'}
+        </Animated.Text> */}
 
-      <Animated.View entering={SlideInLeft.delay(100).springify().mass(0.5)}>
-        <Text style={styles.subtitle}>Statistics</Text>
-        <View style={{ flexDirection: 'row', marginBottom: 10 }}>
-          <Number number={played} label={'Played'} />
-          <Number number={winRate} label={'Win %'} />
-          <Number number={curStreak} label={'Cur Streak'} />
-          <Number number={maxStreak} label={'Max Streak'} />
-        </View>
-      </Animated.View>
-
-      <Animated.View
-        entering={SlideInLeft.delay(200).springify().mass(0.5)}
-        style={{ width: '100%' }}
-      >
-        <GuessDistribution distribution={distribution} />
-      </Animated.View>
-
-      <Animated.View
-        entering={SlideInLeft.delay(200).springify().mass(0.5)}
-        style={{ flexDirection: 'row', padding: 10 }}
-      >
-        <View style={{ alignItems: 'center', flex: 1 }}>
-          <Text style={{ color: colors.lightgrey }}>Next Wordle</Text>
-          <Text
+        <Animated.View entering={SlideInLeft.delay(100).springify().mass(0.5)}>
+          <Text style={styles.subtitle}>Statistics</Text>
+          <View
             style={{
-              color: colors.lightgrey,
-              fontSize: 24,
-              fontWeight: 'bold',
+              flexDirection: 'row',
+              marginBottom: 10,
+              justifyContent: 'space-between',
             }}
           >
-            {formatSeconds()}
-          </Text>
-        </View>
+            <Number number={played} label={'Played'} />
+            <Number number={winRate} label={'Win %'} />
+            <Number number={curStreak} label={'Cur Streak'} />
+            <Number number={maxStreak} label={'Max Streak'} />
+          </View>
+        </Animated.View>
 
-        <Pressable
-          onPress={share}
+        <Animated.View
+          entering={SlideInLeft.delay(200).springify().mass(0.5)}
+          style={{ width: '100%' }}
+        >
+          <GuessDistribution distribution={distribution} />
+        </Animated.View>
+
+        <Animated.View
+          entering={SlideInLeft.delay(200).springify().mass(0.5)}
           style={{
-            flex: 1,
-            backgroundColor: colors.primary,
-            borderRadius: 25,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
             alignItems: 'center',
-            justifyContent: 'center',
           }}
         >
-          <Text style={{ color: colors.lightgrey, fontWeight: 'bold' }}>
-            Share
-          </Text>
-        </Pressable>
-      </Animated.View>
-    </View>
+          <View>
+            <Text style={{ color: colors.lightgrey }}>Next Wordle</Text>
+            <Text
+              style={{
+                color: colors.lightgrey,
+                fontSize: 20,
+                fontWeight: 'bold',
+              }}
+            >
+              {formatSeconds()}
+            </Text>
+          </View>
+
+          <Pressable
+            onPress={share}
+            style={{
+              paddingHorizontal: 20,
+              paddingVertical: 10,
+              backgroundColor: colors.primary,
+              borderRadius: 10,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Text
+              style={{
+                color: colors.lightgrey,
+                fontWeight: 'bold',
+                fontSize: 16,
+              }}
+            >
+              Share
+            </Text>
+          </Pressable>
+        </Animated.View>
+      </View>
+    </Modal>
   );
 };
 
 const styles = StyleSheet.create({
   title: {
-    fontSize: 30,
+    fontSize: 22,
     color: 'white',
     textAlign: 'center',
     marginVertical: 10,
   },
   subtitle: {
-    fontSize: 20,
+    fontSize: 16,
     color: colors.lightgrey,
     textAlign: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
     textTransform: 'uppercase',
     fontWeight: 'bold',
+  },
+  cross: {
+    position: 'absolute',
+    right: 5,
   },
 });
 

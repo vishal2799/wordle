@@ -22,6 +22,15 @@ import Animated, {
   FlipInEasyY,
   SlideInLeft,
 } from 'react-native-reanimated';
+import {
+  BannerAd,
+  BannerAdSize,
+  TestIds,
+} from 'react-native-google-mobile-ads';
+
+const adUnitId = __DEV__
+  ? TestIds.BANNER
+  : 'ca-app-pub-xxxxxxxxxxxxx/yyyyyyyyyyyyyy';
 
 const NUMBER_OF_TRIES = 6;
 
@@ -29,7 +38,6 @@ const dayofTheYear = getDayOfTheYear();
 const dayKey = getDayKey();
 
 const Game = ({ navigation }) => {
-  AsyncStorage.removeItem('@game');
   const word = words[dayofTheYear];
   const letters = word.split('');
 
@@ -200,119 +208,163 @@ const Game = ({ navigation }) => {
   //   );
   // }
 
+  if (gameState !== 'playing') {
+    if (gameState === 'won') {
+      alert('You won');
+    }
+    if (gameState === 'lost') {
+      alert('You lost');
+    }
+    navigation.navigate('MyModal');
+  }
+
   return (
-    <SafeAreaView style={styles2.container}>
-      <StatusBar style='light' />
-      <View
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          width: '100%',
-          marginBottom: 15,
-          marginTop: 5,
-        }}
-      >
-        <View style={{ display: 'flex', flexDirection: 'row' }}>
+    <>
+      <SafeAreaView style={styles2.container}>
+        <StatusBar style='light' />
+        <View
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
+            marginBottom: 15,
+            marginTop: 5,
+          }}
+        >
+          <View style={{ display: 'flex', flexDirection: 'row' }}>
+            <Pressable
+              style={[
+                styles2.button5,
+                { backgroundColor: 'blue', marginRight: 10 },
+              ]}
+              onPress={() => navigation.navigate('HelpModal')}
+            >
+              <Entypo name='help' size={18} color='white' />
+            </Pressable>
+            <Pressable
+              style={[styles2.button5, { backgroundColor: 'blue' }]}
+              onPress={() => navigation.navigate('MyModal')}
+            >
+              <Entypo name='bar-graph' size={18} color='white' />
+            </Pressable>
+          </View>
+          {/* <View>
+          <Text style={styles2.classicText}>Classic</Text>
+        </View> */}
           <Pressable
-            style={[
-              styles2.button5,
-              { backgroundColor: 'blue', marginRight: 10 },
-            ]}
-            onPress={() => navigation.navigate('HelpModal')}
+            style={[styles2.button5, { backgroundColor: 'orange' }]}
+            onPress={() => navigation.navigate('SettingsModal')}
           >
-            <Entypo name='help' size={24} color='white' />
+            <Entypo name='cog' size={18} color='white' />
           </Pressable>
+        </View>
+        <ScrollView style={styles.map}>
+          {rows.map((row, i) => (
+            <Animated.View
+              entering={SlideInLeft.delay(i * 50)}
+              key={`row1-${i}`}
+              style={styles.row}
+            >
+              {row.map((letter, j) => (
+                <>
+                  {i < curRow && (
+                    <Animated.View
+                      entering={FlipInEasyY.delay(j * 100)}
+                      key={`cell-color-${i}-${j}`}
+                      style={getCellStyle(i, j)}
+                    >
+                      <Text style={styles.cellText}>
+                        {letter.toUpperCase()}
+                      </Text>
+                    </Animated.View>
+                  )}
+                  {i === curRow && !!letter && (
+                    <Animated.View
+                      entering={ZoomIn}
+                      key={`cell-active-${i}-${j}`}
+                      style={getCellStyle(i, j)}
+                    >
+                      <Text style={styles.cellText}>
+                        {letter.toUpperCase()}
+                      </Text>
+                    </Animated.View>
+                  )}
+                  {!letter && (
+                    <View key={`cell-${i}-${j}`} style={getCellStyle(i, j)}>
+                      <Text style={styles.cellText}>
+                        {letter.toUpperCase()}
+                      </Text>
+                    </View>
+                  )}
+                </>
+              ))}
+            </Animated.View>
+          ))}
+        </ScrollView>
+
+        <View
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
+            marginBottom: 15,
+            marginTop: 5,
+          }}
+        >
           <Pressable
             style={[styles2.button5, { backgroundColor: 'blue' }]}
             onPress={() => navigation.navigate('Home')}
           >
-            <Entypo name='bar-graph' size={24} color='white' />
+            <Entypo name='home' size={18} color='white' />
           </Pressable>
+          {gameState === 'playing' ? (
+            <>
+              <Pressable
+                style={styles2.button2}
+                onPress={() => onKeyPressed(ENTER)}
+              >
+                <Text style={styles2.text2}>Submit</Text>
+              </Pressable>
+              <View></View>
+              {/* <Pressable
+              style={[styles2.button5, { backgroundColor: 'orange' }]}
+              onPress={() => navigation.navigate('MyModal')}
+            >
+              <Entypo name='light-bulb' size={24} color='white' />
+            </Pressable> */}
+            </>
+          ) : (
+            <>
+              <View>
+                <Text style={styles2.text2}>
+                  You {gameState === 'won' ? 'Won' : ''}
+                  {gameState === 'lost' ? 'Lost' : ''}.
+                </Text>
+              </View>
+              <View></View>
+            </>
+          )}
         </View>
-        <View>
-          <Text style={styles2.classicText}>Classic</Text>
-        </View>
-        <Pressable
-          style={[styles2.button5, { backgroundColor: 'orange' }]}
-          onPress={() => navigation.navigate('SettingsModal')}
-        >
-          <Entypo name='cog' size={24} color='white' />
-        </Pressable>
-      </View>
-      <ScrollView style={styles.map}>
-        {rows.map((row, i) => (
-          <Animated.View
-            entering={SlideInLeft.delay(i * 50)}
-            key={`row-${i}`}
-            style={styles.row}
-          >
-            {row.map((letter, j) => (
-              <>
-                {i < curRow && (
-                  <Animated.View
-                    entering={FlipInEasyY.delay(j * 100)}
-                    key={`cell-color-${i}-${j}`}
-                    style={getCellStyle(i, j)}
-                  >
-                    <Text style={styles.cellText}>{letter.toUpperCase()}</Text>
-                  </Animated.View>
-                )}
-                {i === curRow && !!letter && (
-                  <Animated.View
-                    entering={ZoomIn}
-                    key={`cell-active-${i}-${j}`}
-                    style={getCellStyle(i, j)}
-                  >
-                    <Text style={styles.cellText}>{letter.toUpperCase()}</Text>
-                  </Animated.View>
-                )}
-                {!letter && (
-                  <View key={`cell-${i}-${j}`} style={getCellStyle(i, j)}>
-                    <Text style={styles.cellText}>{letter.toUpperCase()}</Text>
-                  </View>
-                )}
-              </>
-            ))}
-          </Animated.View>
-        ))}
-      </ScrollView>
 
-      <View
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          width: '100%',
-          marginBottom: 15,
-          marginTop: 5,
+        <Keyboard
+          onKeyPressed={onKeyPressed}
+          greenCaps={greenCaps}
+          yellowCaps={yellowCaps}
+          greyCaps={greyCaps}
+        />
+      </SafeAreaView>
+      <BannerAd
+        unitId={adUnitId}
+        size={BannerAdSize.FULL_BANNER}
+        requestOptions={{
+          requestNonPersonalizedAdsOnly: true,
         }}
-      >
-        <Pressable
-          style={[styles2.button5, { backgroundColor: 'blue' }]}
-          onPress={() => navigation.navigate('Home')}
-        >
-          <Entypo name='home' size={24} color='white' />
-        </Pressable>
-        <Pressable style={styles2.button2} onPress={() => onKeyPressed(ENTER)}>
-          <Text style={styles2.text2}>Submit</Text>
-        </Pressable>
-        <Pressable
-          style={[styles2.button5, { backgroundColor: 'orange' }]}
-          onPress={() => navigation.navigate('MyModal')}
-        >
-          <Entypo name='light-bulb' size={24} color='white' />
-        </Pressable>
-      </View>
-
-      <Keyboard
-        onKeyPressed={onKeyPressed}
-        greenCaps={greenCaps}
-        yellowCaps={yellowCaps}
-        greyCaps={greyCaps}
       />
-    </SafeAreaView>
+    </>
   );
 };
 
@@ -329,8 +381,8 @@ const styles2 = StyleSheet.create({
   button2: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 28,
+    paddingVertical: 6,
+    paddingHorizontal: 24,
     borderRadius: 10,
     elevation: 3,
     backgroundColor: 'green',
@@ -339,14 +391,14 @@ const styles2 = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     borderRadius: 10,
     elevation: 3,
     backgroundColor: 'green',
   },
   text2: {
-    fontSize: 20,
-    lineHeight: 21,
+    fontSize: 14,
+    lineHeight: 16,
     fontWeight: 'bold',
     letterSpacing: 0.25,
     color: 'white',
